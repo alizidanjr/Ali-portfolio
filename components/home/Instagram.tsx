@@ -166,7 +166,7 @@ export function Instagram() {
                     </div>
 
                     <Button
-                        size="xl"
+                        size="lg"
                         className="relative z-10 rounded-full font-black uppercase tracking-widest px-10 h-16 shadow-xl hover:scale-105 transition-all bg-primary text-primary-foreground"
                         asChild
                     >
