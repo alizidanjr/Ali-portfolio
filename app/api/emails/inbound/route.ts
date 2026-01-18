@@ -3,11 +3,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Initialize Resend lazily inside the handler to prevent build-time errors
 
 export async function POST(request: NextRequest) {
     try {
         const payload = await request.json();
+
+        if (!process.env.RESEND_API_KEY) {
+            console.error("RESEND_API_KEY is not defined");
+            return NextResponse.json(
+                { success: false, error: "Email service misconfigured" },
+                { status: 500 }
+            );
+        }
+
+        const resend = new Resend(process.env.RESEND_API_KEY);
 
         // Resend Inbound Webhook payload contains data about the received email
         // Format: { from, to, subject, text, html, cc, bcc, ... }

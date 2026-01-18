@@ -3,7 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { format } from "date-fns";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Initialize Resend lazily inside the handler to prevent build-time errors
+// when the API key is not present during static analysis
 
 const bookingSchema = z.object({
     name: z.string().min(2),
@@ -17,6 +18,16 @@ export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
         const validatedData = bookingSchema.parse(body);
+
+        if (!process.env.RESEND_API_KEY) {
+            console.error("RESEND_API_KEY is not defined");
+            return NextResponse.json(
+                { success: false, error: "Email service misconfigured" },
+                { status: 500 }
+            );
+        }
+
+        const resend = new Resend(process.env.RESEND_API_KEY);
 
         const formattedDate = format(validatedData.date, "PPP");
         const serviceTypeDisplay = {
